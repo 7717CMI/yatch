@@ -172,21 +172,21 @@ export function CustomerIntelligencePropositions({ height }: { height?: number }
         </p>
       </div>
 
-      <AccordionItem title="Proposition 1 - Customer Information & Contact Details" defaultOpen={true}>
+      <AccordionItem title="Proposition 1 - Basic" defaultOpen={true}>
         <p className="text-xs text-gray-500 mb-3">
           Basic customer profiling with company details and contact information.
         </p>
         <PlaceholderTable sections={prop1Sections} />
       </AccordionItem>
 
-      <AccordionItem title="Proposition 2 - Threat Exposure, Risk Drivers & Purchasing Behaviour">
+      <AccordionItem title="Proposition 2 - Advanced">
         <p className="text-xs text-gray-500 mb-3">
           Includes Proposition 1 plus threat exposure analysis and purchasing behaviour insights.
         </p>
         <PlaceholderTable sections={prop2Sections} />
       </AccordionItem>
 
-      <AccordionItem title="Proposition 3 - Service Requirements & CMI Insights">
+      <AccordionItem title="Proposition 3 - Premium">
         <p className="text-xs text-gray-500 mb-3">
           Includes Proposition 2 plus service requirements and CMI team insights.
         </p>
