@@ -1,55 +1,100 @@
 {
   "Global": {
-    "By Product Type": {
-      "Helical Gearbox": {},
-      "Bevel Gearbox": {},
-      "Spur Gearbox": {},
-      "Others (Worm Gearbox, Planetary Gearbox, etc.)": {}
-    },
-    "By Gear Train Stage Count": {
-      "Single-stage": {},
-      "Two-stage": {},
-      "Three-stage and Above": {}
-    },
-    "By Gearbox Rated Input Power": {
-      "Up to 150 kW": {},
-      "151 kW to 500 kW": {},
-      "501 kW to 1,500 kW": {},
-      "1,501 kW to 5,000 kW": {},
-      "Above 5,000 kW": {}
-    },
-    "By Application": {
-      "Main Propulsion": {},
-      "Secondary, Emergency and Hybrid Propulsion (PTI)": {},
-      "PTO and PTI for Auxiliary Loads": {
-        "Generator Drive": {},
-        "Pump Drive": {},
-        "Winch, Crane & Deck Machinery Drive": {}
+    "By Service": {
+      "Yacht Brokerage Service": {
+        "New Build Brokerage": {},
+        "Pre Owned Yacht Brokerage": {},
+        "Sale And Purchase Advisory": {}
       },
-      "Thruster and Maneuvering Drive": {},
-      "Dredge Pump and Dredging Drive": {},
-      "Special Mission Drive": {}
-    },
-    "By Vessel Type": {
-      "Commercial Vessels": {
-        "Bulk Carriers": {},
-        "Tankers": {},
-        "Container Ships": {},
-        "General Cargo and Multi-Purpose Vessels": {},
-        "Ro-Ro and Car Carriers": {},
-        "Others (Tug Boats & Workboats, Inland Waterway Vessels, etc.)": {}
+      "Yacht Management Service": {
+        "Full Scope Yacht Management": {},
+        "Technical Management Only": {},
+        "Crew Management Only": {},
+        "Compliance And Regulatory Management Only": {},
+        "Financial And Accounting Management Only": {}
       },
-      "Naval and Defence Vessels": {
-        "Surface Combatants": {},
-        "Submarines and Underwater Vehicles": {},
-        "Patrol and Coast Guard Vessels": {},
-        "Naval Auxiliaries and Replenishment Ships": {}
-      },
-      "Recreational Vessels": {}
+      "Yacht Charter Service": {}
     },
-    "By Sales Channel": {
-      "Newbuild OEM Fitment": {},
-      "Retrofit and Replacement": {}
+    "By Length": {
+      "Below 30 Meters": {},
+      "30-50 Meters": {},
+      "50-70 Meters": {},
+      "70-100 Meters": {},
+      "Above 100 Meters": {}
+    },
+    "By Service, By Length": {
+      "Yacht Brokerage Service by Length": {
+        "New Build Brokerage": {
+          "Below 30 Meters": {},
+          "30-50 Meters": {},
+          "50-70 Meters": {},
+          "70-100 Meters": {},
+          "Above 100 Meters": {}
+        },
+        "Pre Owned Yacht Brokerage": {
+          "Below 30 Meters": {},
+          "30-50 Meters": {},
+          "50-70 Meters": {},
+          "70-100 Meters": {},
+          "Above 100 Meters": {}
+        },
+        "Sale And Purchase Advisory": {
+          "Below 30 Meters": {},
+          "30-50 Meters": {},
+          "50-70 Meters": {},
+          "70-100 Meters": {},
+          "Above 100 Meters": {}
+        }
+      },
+      "Yacht Management Service by Length": {
+        "Full Scope Yacht Management": {
+          "Below 30 Meters": {},
+          "30-50 Meters": {},
+          "50-70 Meters": {},
+          "70-100 Meters": {},
+          "Above 100 Meters": {}
+        },
+        "Technical Management Only": {
+          "Below 30 Meters": {},
+          "30-50 Meters": {},
+          "50-70 Meters": {},
+          "70-100 Meters": {},
+          "Above 100 Meters": {}
+        },
+        "Crew Management Only": {
+          "Below 30 Meters": {},
+          "30-50 Meters": {},
+          "50-70 Meters": {},
+          "70-100 Meters": {},
+          "Above 100 Meters": {}
+        },
+        "Compliance And Regulatory Management Only": {
+          "Below 30 Meters": {},
+          "30-50 Meters": {},
+          "50-70 Meters": {},
+          "70-100 Meters": {},
+          "Above 100 Meters": {}
+        },
+        "Financial And Accounting Management Only": {
+          "Below 30 Meters": {},
+          "30-50 Meters": {},
+          "50-70 Meters": {},
+          "70-100 Meters": {},
+          "Above 100 Meters": {}
+        }
+      },
+      "Yacht Charter Service By Length": {
+        "Below 30 Meters": {},
+        "30-50 Meters": {},
+        "50-70 Meters": {},
+        "70-100 Meters": {},
+        "Above 100 Meters": {}
+      }
+    },
+    "By Propulsion Type": {
+      "Conventional Diesel Propulsion": {},
+      "Diesel-electric Propulsion": {},
+      "Others (Hybrid, Waterjet propulsion, Gas Turbine, etc.)": {}
     },
     "By Region": {
       "North America": {

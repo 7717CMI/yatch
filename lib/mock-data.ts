@@ -35,7 +35,7 @@ export function createMockData(): ComparisonData {
         all_geographies: ['Global']
       },
       segments: {
-        'By End-Use*Product Type': {
+        'By Service': {
           type: 'hierarchical',
           items: [],
           hierarchy: {},
