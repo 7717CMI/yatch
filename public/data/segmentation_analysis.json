@@ -1,28 +1,55 @@
 {
   "Global": {
-    "By Type": {
-      "Sub-Normothermic Perfusion (20–34°C)": {},
-      "Warm or Normothermic Perfusion (35–37°C)": {}
+    "By Product Type": {
+      "Helical Gearbox": {},
+      "Bevel Gearbox": {},
+      "Spur Gearbox": {},
+      "Others (Worm Gearbox, Planetary Gearbox, etc.)": {}
     },
-    "By Organ Type": {
-      "Liver": {},
-      "Heart": {},
-      "Lung": {},
-      "Kidney": {},
-      "Others (Pancreas, Small bowel / Intestine, Composite Tissues / Limb Perfusion (emerging use cases))": {}
+    "By Gear Train Stage Count": {
+      "Single-stage": {},
+      "Two-stage": {},
+      "Three-stage and Above": {}
     },
-    "Application / Use Case": {
-      "Organ Preservation": {},
-      "Viability Assessment": {},
-      "Physiologic Transport": {},
-      "Reconditioning Marginal Organs": {},
-      "Others (Research Use / Protocol development)": {}
+    "By Gearbox Rated Input Power": {
+      "Up to 150 kW": {},
+      "151 kW to 500 kW": {},
+      "501 kW to 1,500 kW": {},
+      "1,501 kW to 5,000 kW": {},
+      "Above 5,000 kW": {}
     },
-    "By End User": {
-      "Hospitals & Clinics": {},
-      "Specialty Clinic/Centers": {},
-      "Transplant Centers": {},
-      "Others (Research Institutes/Centers, Organ Procurement Organizations, etc.)": {}
+    "By Application": {
+      "Main Propulsion": {},
+      "Secondary, Emergency and Hybrid Propulsion (PTI)": {},
+      "PTO and PTI for Auxiliary Loads": {
+        "Generator Drive": {},
+        "Pump Drive": {},
+        "Winch, Crane & Deck Machinery Drive": {}
+      },
+      "Thruster and Maneuvering Drive": {},
+      "Dredge Pump and Dredging Drive": {},
+      "Special Mission Drive": {}
+    },
+    "By Vessel Type": {
+      "Commercial Vessels": {
+        "Bulk Carriers": {},
+        "Tankers": {},
+        "Container Ships": {},
+        "General Cargo and Multi-Purpose Vessels": {},
+        "Ro-Ro and Car Carriers": {},
+        "Others (Tug Boats & Workboats, Inland Waterway Vessels, etc.)": {}
+      },
+      "Naval and Defence Vessels": {
+        "Surface Combatants": {},
+        "Submarines and Underwater Vehicles": {},
+        "Patrol and Coast Guard Vessels": {},
+        "Naval Auxiliaries and Replenishment Ships": {}
+      },
+      "Recreational Vessels": {}
+    },
+    "By Sales Channel": {
+      "Newbuild OEM Fitment": {},
+      "Retrofit and Replacement": {}
     },
     "By Region": {
       "North America": {
