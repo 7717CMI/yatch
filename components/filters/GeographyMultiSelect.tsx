@@ -44,12 +44,13 @@ export function GeographyMultiSelect() {
     return { globalItems, regions, countries, hasHierarchy, flatOptions }
   }, [data])
 
-  // Filter items based on search
+  // Filter items based on search - only search regions, not countries
   const searchResults = useMemo(() => {
     if (!searchTerm) return null
     const search = searchTerm.toLowerCase()
-    return flatOptions.filter(geo => geo.toLowerCase().includes(search))
-  }, [searchTerm, flatOptions])
+    const topLevel = [...globalItems, ...regions]
+    return topLevel.filter(geo => geo.toLowerCase().includes(search))
+  }, [searchTerm, globalItems, regions])
 
   const toggleRegionExpand = (region: string) => {
     setExpandedRegions(prev => {
@@ -74,8 +75,14 @@ export function GeographyMultiSelect() {
 
   const handleSelectAll = () => {
     if (!data) return
+    // Only select top-level regions, not individual countries
+    const geo = data.dimensions.geographies
+    const topLevel = [
+      ...(geo.global || []),
+      ...(geo.regions || [])
+    ]
     updateFilters({
-      geographies: data.dimensions.geographies.all_geographies
+      geographies: topLevel.length > 0 ? topLevel : geo.all_geographies
     })
   }
 
@@ -107,27 +114,12 @@ export function GeographyMultiSelect() {
   )
 
   const renderRegion = (region: string) => {
-    const regionCountries = countries[region] || []
-    const isExpanded = expandedRegions.has(region)
-    const hasCountries = regionCountries.length > 0
-
     return (
       <div key={region}>
         <div className="flex items-center hover:bg-blue-50">
-          {hasCountries && (
-            <button
-              onClick={(e) => { e.stopPropagation(); toggleRegionExpand(region) }}
-              className="p-1 ml-1 hover:bg-gray-200 rounded"
-            >
-              {isExpanded
-                ? <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
-                : <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
-              }
-            </button>
-          )}
           <label
             className="flex items-center py-1.5 cursor-pointer flex-1"
-            style={{ paddingLeft: hasCountries ? '2px' : '28px', paddingRight: '12px' }}
+            style={{ paddingLeft: '12px', paddingRight: '12px' }}
           >
             <input
               type="checkbox"
@@ -141,7 +133,6 @@ export function GeographyMultiSelect() {
             )}
           </label>
         </div>
-        {isExpanded && regionCountries.map(country => renderCheckbox(country, 2))}
       </div>
     )
   }

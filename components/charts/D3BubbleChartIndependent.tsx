@@ -37,10 +37,15 @@ function OpportunityGeographyMultiSelect() {
 
   const geographyOptions = useMemo(() => {
     if (!data || !data.dimensions?.geographies) return []
-    const allGeographies = data.dimensions.geographies.all_geographies || []
-    if (!searchTerm) return allGeographies
+    // Only show top-level regions, not individual countries
+    const geo = data.dimensions.geographies
+    const regions = [
+      ...(geo.global || []),
+      ...(geo.regions || [])
+    ]
+    if (!searchTerm) return regions
     const search = searchTerm.toLowerCase()
-    return allGeographies.filter(geo => geo.toLowerCase().includes(search))
+    return regions.filter(g => g.toLowerCase().includes(search))
   }, [data, searchTerm])
 
   if (shouldHide) return null
