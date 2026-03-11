@@ -1,8 +1,19 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useDashboardStore } from '@/lib/store'
 import { Check, ChevronDown, ChevronRight } from 'lucide-react'
+
+// Hardcoded hierarchy matching the user's specification
+const GEOGRAPHY_HIERARCHY: Record<string, string[]> = {
+  'North America': ['U.S.', 'Canada'],
+  'Europe': ['U.K.', 'Germany', 'Italy', 'France', 'Spain', 'Russia', 'Rest of Europe'],
+  'Asia Pacific': ['China', 'India', 'Japan', 'South Korea', 'ASEAN', 'Australia', 'Rest of Asia Pacific'],
+  'Middle East & Africa': ['GCC', 'South Africa', 'Rest of Middle East & Africa'],
+  'Latin America': ['Brazil', 'Argentina', 'Mexico', 'Rest of Latin America'],
+}
+
+const REGION_ORDER = ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East & Africa']
 
 export function GeographyMultiSelect() {
   const { data, filters, updateFilters } = useDashboardStore()
@@ -28,29 +39,51 @@ export function GeographyMultiSelect() {
     }
   }, [isOpen])
 
-  // Build hierarchical geography structure
-  const { globalItems, regions, countries, hasHierarchy, flatOptions } = useMemo(() => {
+  // Build hierarchical geography structure from data, merging with hardcoded hierarchy
+  const { regions, countries } = useMemo(() => {
     if (!data || !data.dimensions?.geographies) {
-      return { globalItems: [], regions: [], countries: {} as Record<string, string[]>, hasHierarchy: false, flatOptions: [] }
+      return { regions: REGION_ORDER, countries: GEOGRAPHY_HIERARCHY }
     }
 
     const geo = data.dimensions.geographies
-    const globalItems = geo.global || []
-    const regions = geo.regions || []
-    const countries = geo.countries || {}
-    const hasHierarchy = regions.length > 0
-    const flatOptions = geo.all_geographies || []
+    const dataCountries = geo.countries || {}
+    const mergedCountries: Record<string, string[]> = { ...GEOGRAPHY_HIERARCHY }
 
-    return { globalItems, regions, countries, hasHierarchy, flatOptions }
+    for (const [region, countryList] of Object.entries(dataCountries)) {
+      if (countryList.length > 0) {
+        mergedCountries[region] = countryList
+      }
+    }
+
+    const dataRegions = geo.regions?.length > 0 ? geo.regions : REGION_ORDER
+    const orderedRegions = REGION_ORDER.filter(r => dataRegions.includes(r))
+    dataRegions.forEach(r => {
+      if (!orderedRegions.includes(r)) orderedRegions.push(r)
+    })
+
+    return { regions: orderedRegions, countries: mergedCountries }
   }, [data])
 
-  // Filter items based on search - only search regions, not countries
+  // Filter items based on search - search both regions and countries
   const searchResults = useMemo(() => {
     if (!searchTerm) return null
     const search = searchTerm.toLowerCase()
-    const topLevel = [...globalItems, ...regions]
-    return topLevel.filter(geo => geo.toLowerCase().includes(search))
-  }, [searchTerm, globalItems, regions])
+    const results: { type: 'region' | 'country'; name: string; parent?: string }[] = []
+
+    regions.forEach(region => {
+      if (region.toLowerCase().includes(search)) {
+        results.push({ type: 'region', name: region })
+      }
+      const regionCountries = countries[region] || []
+      regionCountries.forEach(country => {
+        if (country.toLowerCase().includes(search)) {
+          results.push({ type: 'country', name: country, parent: region })
+        }
+      })
+    })
+
+    return results
+  }, [searchTerm, regions, countries])
 
   const toggleRegionExpand = (region: string) => {
     setExpandedRegions(prev => {
@@ -64,6 +97,7 @@ export function GeographyMultiSelect() {
     })
   }
 
+  // Simple independent toggle - selecting a region does NOT select its countries
   const handleToggle = (geography: string) => {
     const current = filters.geographies
     const updated = current.includes(geography)
@@ -74,16 +108,8 @@ export function GeographyMultiSelect() {
   }
 
   const handleSelectAll = () => {
-    if (!data) return
-    // Only select top-level regions, not individual countries
-    const geo = data.dimensions.geographies
-    const topLevel = [
-      ...(geo.global || []),
-      ...(geo.regions || [])
-    ]
-    updateFilters({
-      geographies: topLevel.length > 0 ? topLevel : geo.all_geographies
-    })
+    // Select only regions (not individual countries)
+    updateFilters({ geographies: [...regions] })
   }
 
   const handleClearAll = () => {
@@ -94,45 +120,77 @@ export function GeographyMultiSelect() {
 
   const selectedCount = filters.geographies.length
 
-  const renderCheckbox = (geography: string, indent: number = 0) => (
+  const renderCountryCheckbox = (country: string) => (
     <label
-      key={geography}
-      className="flex items-center py-1.5 hover:bg-blue-50 cursor-pointer"
-      style={{ paddingLeft: `${12 + indent * 20}px`, paddingRight: '12px' }}
+      key={country}
+      className="flex items-center py-1 hover:bg-blue-50 cursor-pointer"
+      style={{ paddingLeft: '48px', paddingRight: '12px' }}
     >
       <input
         type="checkbox"
-        checked={filters.geographies.includes(geography)}
-        onChange={() => handleToggle(geography)}
-        className="mr-2 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+        checked={filters.geographies.includes(country)}
+        onChange={() => handleToggle(country)}
+        className="mr-2 h-3.5 w-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
       />
-      <span className="text-sm text-black flex-1">{geography}</span>
-      {filters.geographies.includes(geography) && (
-        <Check className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
+      <span className="text-xs text-black flex-1">{country}</span>
+      {filters.geographies.includes(country) && (
+        <Check className="h-3 w-3 text-blue-600 flex-shrink-0" />
       )}
     </label>
   )
 
   const renderRegion = (region: string) => {
+    const regionCountries = countries[region] || []
+    const isExpanded = expandedRegions.has(region)
+    const hasCountries = regionCountries.length > 0
+    const isSelected = filters.geographies.includes(region)
+
     return (
       <div key={region}>
         <div className="flex items-center hover:bg-blue-50">
+          {/* Expand/collapse button */}
+          {hasCountries ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleRegionExpand(region)
+              }}
+              className="flex items-center justify-center w-6 h-6 ml-1 hover:bg-gray-200 rounded"
+            >
+              {isExpanded ? (
+                <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
+              )}
+            </button>
+          ) : (
+            <div className="w-6 ml-1" />
+          )}
+
+          {/* Region checkbox - independent, does NOT select children */}
           <label
             className="flex items-center py-1.5 cursor-pointer flex-1"
-            style={{ paddingLeft: '12px', paddingRight: '12px' }}
+            style={{ paddingRight: '12px' }}
           >
             <input
               type="checkbox"
-              checked={filters.geographies.includes(region)}
+              checked={isSelected}
               onChange={() => handleToggle(region)}
               className="mr-2 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
             />
             <span className="text-sm text-black font-medium flex-1">{region}</span>
-            {filters.geographies.includes(region) && (
+            {isSelected && (
               <Check className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
             )}
           </label>
         </div>
+
+        {/* Expanded countries */}
+        {isExpanded && hasCountries && (
+          <div className="bg-gray-50/50">
+            {regionCountries.map(country => renderCountryCheckbox(country))}
+          </div>
+        )}
       </div>
     )
   }
@@ -185,35 +243,52 @@ export function GeographyMultiSelect() {
           {/* Geography List */}
           <div className="overflow-y-auto max-h-64">
             {searchResults !== null ? (
-              // Search mode: flat list of matching results
+              // Search mode
               searchResults.length === 0 ? (
                 <div className="px-3 py-4 text-sm text-black text-center">
                   No geographies found matching your search
                 </div>
               ) : (
-                searchResults.map(geo => renderCheckbox(geo, 0))
+                searchResults.map(result => {
+                  if (result.type === 'region') {
+                    return (
+                      <label
+                        key={result.name}
+                        className="flex items-center py-1.5 hover:bg-blue-50 cursor-pointer"
+                        style={{ paddingLeft: '12px', paddingRight: '12px' }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={filters.geographies.includes(result.name)}
+                          onChange={() => handleToggle(result.name)}
+                          className="mr-2 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-black font-medium flex-1">{result.name}</span>
+                      </label>
+                    )
+                  } else {
+                    return (
+                      <label
+                        key={result.name}
+                        className="flex items-center py-1.5 hover:bg-blue-50 cursor-pointer"
+                        style={{ paddingLeft: '28px', paddingRight: '12px' }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={filters.geographies.includes(result.name)}
+                          onChange={() => handleToggle(result.name)}
+                          className="mr-2 h-3.5 w-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="text-xs text-black flex-1">{result.name}</span>
+                        <span className="text-xs text-gray-400 ml-2">{result.parent}</span>
+                      </label>
+                    )
+                  }
+                })
               )
-            ) : hasHierarchy ? (
-              // Hierarchical mode
-              <>
-                {/* Global items */}
-                {globalItems.map(geo => renderCheckbox(geo, 0))}
-                {/* Divider */}
-                {globalItems.length > 0 && regions.length > 0 && (
-                  <div className="border-t border-gray-200 my-1" />
-                )}
-                {/* Regions with expandable countries */}
-                {regions.map(region => renderRegion(region))}
-              </>
             ) : (
-              // Flat mode (fallback)
-              flatOptions.length === 0 ? (
-                <div className="px-3 py-4 text-sm text-black text-center">
-                  No geographies available
-                </div>
-              ) : (
-                flatOptions.map(geo => renderCheckbox(geo, 0))
-              )
+              // Hierarchical mode - regions with expandable countries
+              regions.map(region => renderRegion(region))
             )}
           </div>
         </div>
