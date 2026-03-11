@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { useDashboardStore } from '@/lib/store'
 import { TrendingUp, DollarSign, Calendar, Activity } from 'lucide-react'
-import { formatIndianNumber, formatIndianNumberWithCommas, formatCurrencyValue } from '@/lib/utils'
+import { formatIndianNumber, formatIndianNumberWithCommas, formatCurrencyValue, getVolumeUnitForSegments } from '@/lib/utils'
 
 export function GlobalKPICards() {
   const { data, filters, currency } = useDashboardStore()
@@ -134,7 +134,7 @@ export function GlobalKPICards() {
     // No conversion is needed - just display the values with the appropriate unit label
     const unit = filters.dataType === 'value'
       ? (data.metadata.value_unit || 'Million')
-      : (data.metadata.volume_unit || 'Units')
+      : (getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit) || 'Units')
 
     // Display values as-is (they're already in the correct unit)
     const marketSizeStartDisplay = marketSizeStart

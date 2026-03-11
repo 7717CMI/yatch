@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useDashboardStore } from '@/lib/store'
+import { getVolumeUnitForSegments } from '@/lib/utils'
 import { filterData } from '@/lib/data-processor'
 
 interface MatrixHeatmapProps {
@@ -165,7 +166,7 @@ export function MatrixHeatmap({ title, height = 600 }: MatrixHeatmapProps) {
   const [startYear, endYear] = filters.yearRange
   const valueUnit = filters.dataType === 'value' 
     ? `${data.metadata.currency} ${data.metadata.value_unit}`
-    : data.metadata.volume_unit
+    : getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)
 
   return (
     <div className="w-full">

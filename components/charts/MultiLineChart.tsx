@@ -14,6 +14,7 @@ import {
 import { CHART_THEME, getChartColor } from '@/lib/chart-theme'
 import { filterData, prepareLineChartData, prepareIntelligentMultiLevelData, getUniqueGeographies, getUniqueSegments, getGeographyProportions } from '@/lib/data-processor'
 import { useDashboardStore } from '@/lib/store'
+import { getVolumeUnitForSegment, getVolumeUnitForSegments } from '@/lib/utils'
 
 interface MultiLineChartProps {
   title?: string
@@ -153,7 +154,7 @@ export function MultiLineChart({ title, height = 400 }: MultiLineChartProps) {
     ? isINR 
       ? `Market Value (${currencySymbol})`
       : `Market Value (${selectedCurrency} ${unitLabel})`
-    : `Market Volume (${data.metadata.volume_unit})`
+    : `Market Volume (${getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)})`
 
   // Matrix view should use heatmap instead
   if (filters.viewMode === 'matrix') {
@@ -203,12 +204,13 @@ export function MultiLineChart({ title, height = 400 }: MultiLineChartProps) {
                 const currencySymbol = isINR ? '₹' : '$'
                 const unitText = isINR ? '' : (data.metadata.value_unit || 'Million')
                 
-                const unit = filters.dataType === 'value'
-                  ? isINR 
-                    ? currencySymbol
-                    : `${selectedCurrency} ${unitText}`
-                  : data.metadata.volume_unit
-                
+                const getUnit = (segmentName?: string) => {
+                  if (filters.dataType === 'value') {
+                    return isINR ? currencySymbol : `${selectedCurrency} ${unitText}`
+                  }
+                  return getVolumeUnitForSegment(segmentName || '', data.metadata.segment_volume_units, data.metadata.volume_unit)
+                }
+
                 return (
                   <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg min-w-[250px]">
                     <p className="font-semibold text-black mb-3 pb-2 border-b border-gray-200">
@@ -219,12 +221,12 @@ export function MultiLineChart({ title, height = 400 }: MultiLineChartProps) {
                         const value = entry.value as number
                         const name = entry.name as string
                         const color = entry.color
-                        
+
                         return (
                           <div key={index} className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-2">
-                              <div 
-                                className="w-3 h-3 rounded-full" 
+                              <div
+                                className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: color }}
                               ></div>
                               <span className="text-sm font-medium text-black">
@@ -233,13 +235,13 @@ export function MultiLineChart({ title, height = 400 }: MultiLineChartProps) {
                             </div>
                             <div className="text-right">
                               <span className="text-sm font-semibold text-black">
-                                {value.toLocaleString(undefined, { 
-                                  minimumFractionDigits: 2, 
-                                  maximumFractionDigits: 2 
+                                {value.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
                                 })}
                               </span>
                               <span className="text-xs text-black ml-1">
-                                {unit}
+                                {filters.viewMode === 'segment-mode' ? getUnit(name) : getUnit(filters.segments[0])}
                               </span>
                             </div>
                           </div>

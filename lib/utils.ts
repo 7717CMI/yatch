@@ -84,6 +84,30 @@ export function formatCurrencyValue(value: number, currency: 'USD' | 'INR', show
   }
 }
 
+// Get the volume unit for a specific segment name
+// Falls back to the default volume_unit if no segment-specific unit is found
+export function getVolumeUnitForSegment(
+  segmentName: string,
+  segmentVolumeUnits?: Record<string, string>,
+  defaultUnit: string = 'Number of Yachts'
+): string {
+  if (!segmentVolumeUnits) return defaultUnit
+  return segmentVolumeUnits[segmentName] || defaultUnit
+}
+
+// Get a combined volume unit label for multiple segments
+// If all segments share the same unit, returns that unit; otherwise returns mixed units
+export function getVolumeUnitForSegments(
+  segmentNames: string[],
+  segmentVolumeUnits?: Record<string, string>,
+  defaultUnit: string = 'Number of Yachts'
+): string {
+  if (!segmentVolumeUnits || segmentNames.length === 0) return defaultUnit
+  const units = new Set(segmentNames.map(s => segmentVolumeUnits[s] || defaultUnit))
+  if (units.size === 1) return [...units][0]
+  return defaultUnit
+}
+
 export function formatPercentage(value: number, decimals: number = 2): string {
   return `${value.toFixed(decimals)}%`
 }

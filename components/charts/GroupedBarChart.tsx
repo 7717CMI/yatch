@@ -14,6 +14,7 @@ import {
 import { CHART_THEME, getChartColor, CHART_COLORS } from '@/lib/chart-theme'
 import { filterData, prepareGroupedBarData, prepareIntelligentMultiLevelData, getUniqueGeographies, getUniqueSegments, getGeographyProportions } from '@/lib/data-processor'
 import { useDashboardStore } from '@/lib/store'
+import { getVolumeUnitForSegment, getVolumeUnitForSegments } from '@/lib/utils'
 import type { DataRecord } from '@/lib/types'
 
 interface GroupedBarChartProps {
@@ -337,7 +338,7 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
     ? isINR 
       ? `Market Value (${currencySymbol})`
       : `Market Value (${selectedCurrency} ${unitLabel})`
-    : `Market Volume (${data.metadata.volume_unit})`
+    : `Market Volume (${getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)})`
 
   // Matrix view should use heatmap instead
   if (filters.viewMode === 'matrix') {
@@ -366,11 +367,12 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
     const currencySymbol = isINR ? '₹' : '$'
     const unitText = isINR ? '' : (data.metadata.value_unit || 'Million')
     
-    const unit = filters.dataType === 'value'
-      ? isINR 
-        ? currencySymbol
-        : `${selectedCurrency} ${unitText}`
-      : data.metadata.volume_unit
+    const getUnit = (segmentName?: string) => {
+      if (filters.dataType === 'value') {
+        return isINR ? currencySymbol : `${selectedCurrency} ${unitText}`
+      }
+      return getVolumeUnitForSegment(segmentName || '', data.metadata.segment_volume_units, data.metadata.volume_unit)
+    }
 
     if (chartData.isStacked) {
       // Use the hoveredBar state to determine which stack to show
@@ -423,7 +425,7 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
                   {item.value.toLocaleString(undefined, { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
-                  })} {unit}
+                  })} {filters.viewMode === 'geography-mode' ? getUnit(item.name) : getUnit(hoveredBar || '')}
                 </span>
               </div>
             ))}
@@ -431,16 +433,16 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
               <div className="flex items-center justify-between gap-4 mt-2 pt-2 border-t border-gray-100">
                 <span className="text-sm font-semibold text-black ml-4">Total</span>
                 <span className="text-sm font-bold text-black">
-                  {total.toLocaleString(undefined, { 
-                    minimumFractionDigits: 2, 
-                    maximumFractionDigits: 2 
-                  })} {unit}
+                  {total.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })} {filters.viewMode === 'segment-mode' ? getUnit(hoveredBar || '') : getUnit(items[0]?.name)}
                 </span>
               </div>
             )}
           </div>
           <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-black">
-            {filters.viewMode === 'segment-mode' 
+            {filters.viewMode === 'segment-mode'
               ? `Showing ${hoveredStackId} across ${items.length} geographies`
               : `Showing ${hoveredStackId} across ${items.length} segments`
             }
@@ -475,7 +477,7 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
                   })}
                 </span>
                 <span className="text-xs text-black ml-1">
-                  {unit}
+                  {filters.viewMode === 'segment-mode' ? getUnit(entry.name) : getUnit(filters.segments[0])}
                 </span>
               </div>
             </div>
@@ -487,10 +489,10 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
             <div className="flex items-center justify-between gap-4">
               <span className="text-sm font-semibold text-black">Total</span>
               <span className="text-sm font-bold text-black">
-                {payload.reduce((sum: number, entry: any) => sum + (entry.value || 0), 0).toLocaleString(undefined, { 
-                  minimumFractionDigits: 2, 
-                  maximumFractionDigits: 2 
-                })} {unit}
+                {payload.reduce((sum: number, entry: any) => sum + (entry.value || 0), 0).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })} {getUnit(payload[0]?.name)}
               </span>
             </div>
           </div>

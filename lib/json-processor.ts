@@ -1486,6 +1486,24 @@ export async function processJsonDataAsync(
       currency: 'USD',
       value_unit: 'Million',
       volume_unit: 'Number of Yachts',
+      segment_volume_units: {
+        // Yacht Brokerage Service segments → Number of Transactions
+        'Yacht Brokerage Service': 'Number of Transactions',
+        'New Build Brokerage': 'Number of Transactions',
+        'Pre Owned Yacht Brokerage': 'Number of Transactions',
+        'Sale And Purchase Advisory': 'Number of Transactions',
+        // Yacht Management Service segments → Number of Vessels Under Management
+        'Yacht Management Service': 'Number of Vessels Under Management',
+        'Full Scope Yacht Management': 'Number of Vessels Under Management',
+        'Technical Management Only': 'Number of Vessels Under Management',
+        'Crew Management Only': 'Number of Vessels Under Management',
+        'Compliance And Regulatory Management Only': 'Number of Vessels Under Management',
+        'Financial And Accounting Management Only': 'Number of Vessels Under Management',
+        // Yacht Charter Management Service → Number of Vessels Under Management
+        'Yacht Charter Management Service': 'Number of Vessels Under Management',
+        // Charter Retail Service → Number of Charter Days
+        'Charter Retail Service': 'Number of Charter Days',
+      },
       has_value: valueRecords.length > 0,
       has_volume: volumeRecords.length > 0,
     }

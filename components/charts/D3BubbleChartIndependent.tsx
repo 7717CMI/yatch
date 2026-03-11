@@ -4,6 +4,7 @@ import { useEffect, useRef, useMemo, useState } from 'react'
 import * as d3 from 'd3'
 import { useDashboardStore } from '@/lib/store'
 import { getChartColor } from '@/lib/chart-theme'
+import { getVolumeUnitForSegments } from '@/lib/utils'
 import { filterData } from '@/lib/data-processor'
 import { GeographyMultiSelect } from '@/components/filters/GeographyMultiSelect'
 import { AggregationLevelSelector } from '@/components/filters/AggregationLevelSelector'
@@ -1527,7 +1528,7 @@ export function D3BubbleChartIndependent({ title, height = 500 }: BubbleChartPro
     ? isINR 
       ? currencySymbol
       : `${selectedCurrency} ${unitText}`
-    : data.metadata.volume_unit
+    : getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)
 
   return (
     <div className="w-full min-w-0 overflow-hidden" ref={containerRef}>

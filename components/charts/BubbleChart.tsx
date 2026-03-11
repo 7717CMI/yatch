@@ -15,6 +15,7 @@ import {
 import { CHART_THEME, getChartColor } from '@/lib/chart-theme'
 import { filterData } from '@/lib/data-processor'
 import { useDashboardStore } from '@/lib/store'
+import { getVolumeUnitForSegments } from '@/lib/utils'
 import type { DataRecord } from '@/lib/types'
 
 interface BubbleChartProps {
@@ -143,8 +144,8 @@ export function BubbleChart({ title, height = 500 }: BubbleChartProps) {
 
     const xLabel = filters.dataType === 'value'
       ? `Market Size (${data.metadata.currency} ${data.metadata.value_unit})`
-      : `Market Size (${data.metadata.volume_unit})`
-    
+      : `Market Size (${getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)})`
+
     const yLabel = 'Market Share (%)'
 
     return { bubbles, xLabel, yLabel }
@@ -167,15 +168,15 @@ export function BubbleChart({ title, height = 500 }: BubbleChartProps) {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length && payload[0]?.payload) {
       const point = payload[0].payload as BubbleDataPoint
-      
+
       // Safety check - ensure point has required properties
       if (!point || typeof point.x === 'undefined' || typeof point.y === 'undefined') {
         return null
       }
-      
+
       const unit = filters.dataType === 'value'
         ? `${data.metadata.currency} ${data.metadata.value_unit}`
-        : data.metadata.volume_unit
+        : getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)
 
       return (
         <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg min-w-[280px]">

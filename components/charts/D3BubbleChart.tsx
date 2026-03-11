@@ -5,6 +5,7 @@ import * as d3 from 'd3'
 import { filterData } from '@/lib/data-processor'
 import { useDashboardStore } from '@/lib/store'
 import { getChartColor } from '@/lib/chart-theme'
+import { getVolumeUnitForSegments } from '@/lib/utils'
 import type { DataRecord } from '@/lib/types'
 
 interface BubbleChartProps {
@@ -138,7 +139,7 @@ export function D3BubbleChart({ title, height = 500 }: BubbleChartProps) {
 
     const xLabel = filters.dataType === 'value'
       ? `Market Size (${data.metadata.currency} ${data.metadata.value_unit})`
-      : `Market Size (${data.metadata.volume_unit})`
+      : `Market Size (${getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)})`
     
     const yLabel = 'Market Share (%)'
 
@@ -382,7 +383,7 @@ export function D3BubbleChart({ title, height = 500 }: BubbleChartProps) {
 
   const unit = filters.dataType === 'value'
     ? `${data.metadata.currency} ${data.metadata.value_unit}`
-    : data.metadata.volume_unit
+    : getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)
 
   return (
     <div className="w-full min-w-0 overflow-hidden" ref={containerRef}>

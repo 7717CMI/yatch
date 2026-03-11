@@ -15,6 +15,7 @@ import {
 import { CHART_THEME, getChartColor } from '@/lib/chart-theme'
 import { filterData, prepareWaterfallData } from '@/lib/data-processor'
 import { useDashboardStore } from '@/lib/store'
+import { getVolumeUnitForSegments } from '@/lib/utils'
 
 interface WaterfallChartProps {
   title?: string
@@ -123,7 +124,7 @@ export function WaterfallChart({ title, height = 400 }: WaterfallChartProps) {
 
   const yAxisLabel = filters.dataType === 'value'
     ? `Market Value (${data.metadata.currency} ${data.metadata.value_unit})`
-    : `Market Volume (${data.metadata.volume_unit})`
+    : `Market Volume (${getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)})`
 
   // Custom tooltip for waterfall
   const CustomTooltip = ({ active, payload }: any) => {
@@ -131,7 +132,7 @@ export function WaterfallChart({ title, height = 400 }: WaterfallChartProps) {
       const pointData = payload[0].payload as WaterfallDataPoint
       const unit = filters.dataType === 'value'
         ? `${data.metadata.currency} ${data.metadata.value_unit}`
-        : data.metadata.volume_unit
+        : getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)
       
       return (
         <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg min-w-[280px]">

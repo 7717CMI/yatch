@@ -13,6 +13,7 @@ export interface Metadata {
   currency: string;
   value_unit: string;
   volume_unit: string;
+  segment_volume_units?: Record<string, string>;
   has_value: boolean;
   has_volume: boolean;
 }

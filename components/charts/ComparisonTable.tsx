@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useDashboardStore } from '@/lib/store'
+import { getVolumeUnitForSegments } from '@/lib/utils'
 import { filterData } from '@/lib/data-processor'
 import { ArrowUp, ArrowDown, Download } from 'lucide-react'
 
@@ -162,7 +163,7 @@ export function ComparisonTable({ title, height = 600 }: ComparisonTableProps) {
   const year = filters.yearRange[0] + Math.floor((filters.yearRange[1] - filters.yearRange[0]) / 2)
   const valueUnit = filters.dataType === 'value' 
     ? `${data.metadata.currency} ${data.metadata.value_unit}`
-    : data.metadata.volume_unit
+    : getVolumeUnitForSegments(filters.segments, data.metadata.segment_volume_units, data.metadata.volume_unit)
 
   return (
     <div className="w-full min-w-0 overflow-hidden">
