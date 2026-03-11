@@ -24,6 +24,7 @@ interface GroupedBarChartProps {
 export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
   const { data, filters, currency } = useDashboardStore()
   const [hoveredBar, setHoveredBar] = useState<string | null>(null)
+  const [useLogScale, setUseLogScale] = useState(false)
 
   const chartData = useMemo(() => {
     if (!data) return { data: [], series: [], stackedSeries: null }
@@ -293,7 +294,25 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
       })
     }
 
-    return { data: prepared, series, stackedSeries, isStacked }
+    // Detect large value disparity for log scale suggestion
+    let hasLargeDisparity = false
+    if (prepared.length > 0) {
+      const allValues: number[] = []
+      prepared.forEach(dp => {
+        Object.entries(dp).forEach(([k, v]) => {
+          if (k !== 'year' && typeof v === 'number' && v > 0) {
+            allValues.push(v)
+          }
+        })
+      })
+      if (allValues.length >= 2) {
+        const maxVal = Math.max(...allValues)
+        const minVal = Math.min(...allValues.filter(v => v > 0))
+        hasLargeDisparity = maxVal / minVal > 50
+      }
+    }
+
+    return { data: prepared, series, stackedSeries, isStacked, hasLargeDisparity }
   }, [data, filters])
 
   if (!data || chartData.data.length === 0) {
@@ -488,10 +507,25 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
 
   return (
     <div className="w-full">
-      {title && (
-        <h3 className="text-lg font-semibold mb-4 text-black">{title}</h3>
-      )}
-      
+      <div className="flex items-center justify-between mb-4">
+        {title && (
+          <h3 className="text-lg font-semibold text-black">{title}</h3>
+        )}
+        {chartData.hasLargeDisparity && (
+          <button
+            onClick={() => setUseLogScale(!useLogScale)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+              useLogScale
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-black border-gray-300 hover:bg-gray-50'
+            }`}
+            title="Use logarithmic scale to better visualize data with large value differences"
+          >
+            {useLogScale ? 'Log Scale ON' : 'Log Scale'}
+          </button>
+        )}
+      </div>
+
       <ResponsiveContainer width="100%" height={height}>
         <BarChart
           data={chartData.data}
@@ -506,7 +540,10 @@ export function GroupedBarChart({ title, height = 400 }: GroupedBarChartProps) {
           <YAxis
             tick={{ fontSize: 12 }}
             width={70}
-            label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' }, dx: -10 }}
+            scale={useLogScale ? 'log' : 'auto'}
+            domain={useLogScale ? [1, 'auto'] : [0, 'auto']}
+            allowDataOverflow={useLogScale}
+            label={{ value: yAxisLabel + (useLogScale ? ' (log)' : ''), angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' }, dx: -10 }}
           />
           <Tooltip 
             content={<CustomTooltip />} 

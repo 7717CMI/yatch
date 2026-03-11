@@ -1149,7 +1149,9 @@ async function processSegmentTypeAsync(
           const cagrStr = data.CAGR.replace('%', '').trim()
           cagr = parseFloat(cagrStr) || 0
         } else if (typeof data.CAGR === 'number') {
-          cagr = data.CAGR
+          // CAGR from Excel is a decimal (e.g., 0.103 = 10.3%), convert to percentage
+          // Heuristic: if absolute value < 1, it's a decimal that needs *100
+          cagr = Math.abs(data.CAGR) < 1 ? data.CAGR * 100 : data.CAGR
         }
       } else {
         // Calculate CAGR from base year (2023) to forecast year

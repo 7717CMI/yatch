@@ -54,7 +54,18 @@ export function ComparisonTable({ title, height = 600 }: ComparisonTableProps) {
       growth: record.time_series[startYear] > 0 
         ? (((record.time_series[endYear] || 0) - (record.time_series[startYear] || 0)) / record.time_series[startYear] * 100)
         : 0,
-      cagr: parseCAGR(record.cagr),
+      cagr: (() => {
+        // Calculate CAGR from forecast period (base_year to forecast_year, e.g. 2026-2033)
+        const cagrStart = data.metadata.base_year || startYear;
+        const cagrEnd = data.metadata.forecast_year || endYear;
+        const sv = record.time_series[cagrStart] || 0;
+        const ev = record.time_series[cagrEnd] || 0;
+        const n = cagrEnd - cagrStart;
+        if (sv > 0 && ev > 0 && n > 0) {
+          return (Math.pow(ev / sv, 1 / n) - 1) * 100;
+        }
+        return 0;
+      })(),
       marketShare: record.market_share || 0,
       sparkline: Object.entries(record.time_series)
         .filter(([y]) => parseInt(y) >= startYear && parseInt(y) <= endYear)

@@ -22,6 +22,9 @@ export function GeographyMultiSelect() {
   const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set())
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  // When Volume is selected, only Global is available
+  const isVolumeMode = filters.dataType === 'volume'
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -64,26 +67,33 @@ export function GeographyMultiSelect() {
     return { regions: orderedRegions, countries: mergedCountries }
   }, [data])
 
-  // Filter items based on search - search both regions and countries
+  // Filter items based on search - search Global, regions and countries
   const searchResults = useMemo(() => {
     if (!searchTerm) return null
     const search = searchTerm.toLowerCase()
     const results: { type: 'region' | 'country'; name: string; parent?: string }[] = []
 
-    regions.forEach(region => {
-      if (region.toLowerCase().includes(search)) {
-        results.push({ type: 'region', name: region })
-      }
-      const regionCountries = countries[region] || []
-      regionCountries.forEach(country => {
-        if (country.toLowerCase().includes(search)) {
-          results.push({ type: 'country', name: country, parent: region })
+    // Include Global in search
+    if ('global'.includes(search)) {
+      results.push({ type: 'region', name: 'Global' })
+    }
+
+    if (!isVolumeMode) {
+      regions.forEach(region => {
+        if (region.toLowerCase().includes(search)) {
+          results.push({ type: 'region', name: region })
         }
+        const regionCountries = countries[region] || []
+        regionCountries.forEach(country => {
+          if (country.toLowerCase().includes(search)) {
+            results.push({ type: 'country', name: country, parent: region })
+          }
+        })
       })
-    })
+    }
 
     return results
-  }, [searchTerm, regions, countries])
+  }, [searchTerm, regions, countries, isVolumeMode])
 
   const toggleRegionExpand = (region: string) => {
     setExpandedRegions(prev => {
@@ -107,9 +117,20 @@ export function GeographyMultiSelect() {
     updateFilters({ geographies: updated })
   }
 
+  // Auto-select Global when switching to volume mode
+  useEffect(() => {
+    if (isVolumeMode && !filters.geographies.includes('Global')) {
+      updateFilters({ geographies: ['Global'] })
+    }
+  }, [isVolumeMode])
+
   const handleSelectAll = () => {
-    // Select only regions (not individual countries)
-    updateFilters({ geographies: [...regions] })
+    if (isVolumeMode) {
+      updateFilters({ geographies: ['Global'] })
+      return
+    }
+    // Select Global + all regions (not individual countries)
+    updateFilters({ geographies: ['Global', ...regions] })
   }
 
   const handleClearAll = () => {
@@ -286,9 +307,44 @@ export function GeographyMultiSelect() {
                   }
                 })
               )
+            ) : isVolumeMode ? (
+              // Volume mode - only show Global
+              <label
+                className="flex items-center py-1.5 hover:bg-blue-50 cursor-pointer"
+                style={{ paddingLeft: '12px', paddingRight: '12px' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={filters.geographies.includes('Global')}
+                  onChange={() => handleToggle('Global')}
+                  className="mr-2 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-sm text-black font-semibold flex-1">Global</span>
+                {filters.geographies.includes('Global') && (
+                  <Check className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
+                )}
+              </label>
             ) : (
-              // Hierarchical mode - regions with expandable countries
-              regions.map(region => renderRegion(region))
+              // Hierarchical mode - Global + regions with expandable countries
+              <>
+                {/* Global option */}
+                <label
+                  className="flex items-center py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100"
+                  style={{ paddingLeft: '12px', paddingRight: '12px' }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={filters.geographies.includes('Global')}
+                    onChange={() => handleToggle('Global')}
+                    className="mr-2 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-black font-semibold flex-1">Global</span>
+                  {filters.geographies.includes('Global') && (
+                    <Check className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
+                  )}
+                </label>
+                {regions.map(region => renderRegion(region))}
+              </>
             )}
           </div>
         </div>

@@ -5,10 +5,16 @@
 
 import type { ComparisonData, DataRecord, FilterState } from './types'
 
+// Known regions (not countries) for filtering
+const REGION_NAMES = new Set([
+  'North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East & Africa'
+])
+
 /**
  * Calculate top regions based on market value for a specific year
+ * Only considers region-level geographies, not individual countries
  * @param data - The comparison data
- * @param year - The year to evaluate (default 2024)
+ * @param year - The year to evaluate (default 2023)
  * @param topN - Number of top regions to return (default 3)
  * @returns Array of top region names
  */
@@ -19,21 +25,26 @@ export function getTopRegionsByMarketValue(
 ): string[] {
   if (!data) return []
 
+  // Use data-driven region list if available, fallback to hardcoded
+  const regionSet = data.dimensions.geographies.regions?.length > 0
+    ? new Set(data.dimensions.geographies.regions)
+    : REGION_NAMES
+
   // Get all value data records
   const records = data.data.value.geography_segment_matrix
 
   // Calculate total market value by geography for the specified year
-  // Treat all geographies as single entities - aggregate by name
+  // Only consider region-level geographies
   const geographyTotals = new Map<string, number>()
 
   records.forEach((record: DataRecord) => {
     const geography = record.geography
     const value = record.time_series[year] || 0
 
-    // Skip global level
+    // Skip global and country-level geographies
     if (geography === 'Global') return
+    if (!regionSet.has(geography)) return
 
-    // Treat all geographies as single entities - aggregate by name
     const currentTotal = geographyTotals.get(geography) || 0
     geographyTotals.set(geography, currentTotal + value)
   })
@@ -110,20 +121,24 @@ export function getTopRegionsByCAGR(
 ): string[] {
   if (!data) return []
 
+  // Use data-driven region list if available, fallback to hardcoded
+  const regionSet = data.dimensions.geographies.regions?.length > 0
+    ? new Set(data.dimensions.geographies.regions)
+    : REGION_NAMES
+
   // Get all value data records
   const records = data.data.value.geography_segment_matrix
 
-  // Calculate average CAGR for each geography
-  // Treat all geographies as single entities - aggregate by name
+  // Calculate average CAGR for each region (not countries)
   const geographyCAGRs = new Map<string, number[]>()
 
   records.forEach((record: DataRecord) => {
     const geography = record.geography
 
-    // Skip global level
+    // Skip global and country-level geographies
     if (geography === 'Global') return
+    if (!regionSet.has(geography)) return
 
-    // Treat all geographies as single entities - aggregate by name
     if (record.cagr !== undefined && record.cagr !== null) {
       const cagrs = geographyCAGRs.get(geography) || []
       cagrs.push(record.cagr)
@@ -158,20 +173,24 @@ export function getTopCountriesByCAGR(
 ): string[] {
   if (!data) return []
 
+  // Use data-driven region list if available, fallback to hardcoded
+  const regionSet = data.dimensions.geographies.regions?.length > 0
+    ? new Set(data.dimensions.geographies.regions)
+    : REGION_NAMES
+
   // Get all value data records
   const records = data.data.value.geography_segment_matrix
 
-  // Calculate average CAGR for each geography
-  // Treat all geographies as single entities - aggregate by name
+  // Calculate average CAGR for each country (exclude regions and global)
   const geographyCAGRs = new Map<string, number[]>()
 
   records.forEach((record: DataRecord) => {
     const geography = record.geography
 
-    // Skip global level
+    // Skip global and region-level geographies - only want countries
     if (geography === 'Global') return
+    if (regionSet.has(geography)) return
 
-    // Treat all geographies as single entities - aggregate by name
     if (record.cagr !== undefined && record.cagr !== null) {
       const cagrs = geographyCAGRs.get(geography) || []
       cagrs.push(record.cagr)
