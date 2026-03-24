@@ -1501,6 +1501,8 @@ export async function processJsonDataAsync(
         'Financial And Accounting Management Only': 'Number of Vessels Under Management',
         // Yacht Charter Management Service → Number of Vessels Under Management
         'Yacht Charter Management Service': 'Number of Vessels Under Management',
+        // Yacht Charter Management Service (Number of Days) → Number of Days
+        'Yacht Charter Management Service (Number of Days)': 'Number of Days',
         // Charter Retail Service → Number of Charter Days
         'Charter Retail Service': 'Number of Charter Days',
       },
